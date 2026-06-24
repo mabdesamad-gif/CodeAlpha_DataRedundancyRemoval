@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Data Redundancy Removal System</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: Arial, sans-serif; background: #0f0f1a; color: #fff; padding: 30px; }
+        h1 { text-align: center; color: #7c3aed; margin-bottom: 30px; }
+        .container { max-width: 800px; margin: auto; }
+        .card { background: #1e1e2e; border-radius: 12px; padding: 25px; margin-bottom: 25px; }
+        h2 { color: #a78bfa; margin-bottom: 15px; }
+        input { width: 100%; padding: 10px; margin-bottom: 12px; border-radius: 8px;
+                border: 1px solid #7c3aed; background: #2a2a3e; color: #fff; font-size: 14px; }
+        button { width: 100%; padding: 12px; background: #7c3aed; color: #fff;
+                 border: none; border-radius: 8px; font-size: 16px; cursor: pointer; }
+        button:hover { background: #6d28d9; }
+        #result { margin-top: 15px; padding: 15px; border-radius: 8px; font-weight: bold; display: none; }
+        .ACCEPTED { background: #064e3b; color: #6ee7b7; }
+        .REJECTED { background: #7f1d1d; color: #fca5a5; }
+        .FALSE_POSITIVE { background: #78350f; color: #fcd34d; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #7c3aed; padding: 10px; text-align: left; }
+        td { padding: 10px; border-bottom: 1px solid #2a2a3e; font-size: 13px; }
+        tr:hover { background: #2a2a3e; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🛡️ Data Redundancy Removal System</h1>
+
+        <div class="card">
+            <h2>➕ Ajouter un enregistrement</h2>
+            <input type="text" id="name" placeholder="Nom complet">
+            <input type="email" id="email" placeholder="Email">
+            <input type="text" id="phone" placeholder="Téléphone">
+            <button onclick="addRecord()">Valider</button>
+            <div id="result"></div>
+        </div>
+
+        <div class="card">
+            <h2>📋 Enregistrements valides</h2>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Nom</th><th>Email</th><th>Téléphone</th><th>Date</th></tr>
+                </thead>
+                <tbody id="records-body"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        async function addRecord() {
+            const name = document.getElementById("name").value;
+            const email = document.getElementById("email").value;
+            const phone = document.getElementById("phone").value;
+
+            const res = await fetch("/add", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone })
+            });
+
+            const data = await res.json();
+            const resultDiv = document.getElementById("result");
+            resultDiv.className = data.status;
+            resultDiv.style.display = "block";
+
+            if (data.status === "ACCEPTED") {
+                resultDiv.innerHTML = "✅ " + data.reason;
+                loadRecords();
+            } else if (data.status === "REJECTED") {
+                resultDiv.innerHTML = "❌ " + data.reason;
+            } else {
+                resultDiv.innerHTML = "⚠️ " + data.reason;
+            }
+        }
+
+        async function loadRecords() {
+            const res = await fetch("/records");
+            const data = await res.json();
+            const tbody = document.getElementById("records-body");
+            tbody.innerHTML = "";
+            data.forEach(r => {
+                tbody.innerHTML += `<tr>
+                    <td>${r.id}</td><td>${r.name}</td>
+                    <td>${r.email}</td><td>${r.phone}</td><td>${r.created_at}</td>
+                </tr>`;
+            });
+        }
+
+        loadRecords();
+    </script>
+</body>
+</html>
