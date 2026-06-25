@@ -81,5 +81,5 @@ python app.py
 
 ## 👨‍💻 Author
 
-**Maissoum ABDESMAD**
+**Maissem ABDESMAD**
 CodeAlpha Internship — Task 1
